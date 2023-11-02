@@ -1,5 +1,15 @@
 var mysql = require('mysql');
+const express =  require('express');
+const app = express();
+const session = require('express-session');
 
+app.use(
+  session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
 const db =  mysql.createConnection({
     host: 'hoteldb-1.cjhvgiah3e0n.us-east-1.rds.amazonaws.com',
@@ -21,6 +31,6 @@ exports.getHome = (req, res) => {
     res.render('home');
   } else {
     // User is not logged in, redirect to login page or handle unauthorized access
-    res.redirect('/admin/login'); // Redirect to the login page
+    res.redirect('/admin'); // Redirect to the login page
   }
 }

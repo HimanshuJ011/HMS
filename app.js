@@ -250,7 +250,7 @@ app.get('/admin/rooms/:room_id', (req, res) => {
 });
 
 // get all bookings
-app.get('admin/bookingsAll', (req, res) => {
+app.get('/admin/bookingsAll', (req, res) => {
 
   const bookingQuery = ` SELECT
   b.booking_id,
@@ -276,6 +276,23 @@ app.get('admin/bookingsAll', (req, res) => {
   });
 });
 
+
+//  cancel booking
+app.get('/admin/bookings/cancel/:booking_id', (req, res)=>{
+  const bookingId = req.params.booking_id;
+
+  const query = `UPDATE Bookings SET status = ? WHERE booking_id = ?`;
+  const newStatus = 'cancelled';
+  db.query(query, [newStatus, bookingId], (err, result) => {
+    if (err) {
+      console.error('Database error: ' + err);
+      return res.status(500).json({ error: 'An error occurred while processing your request.' });
+    }
+    res.redirect('/admin/bookingAll');
+  });
+  
+
+});
 // All invoices
 app.get('/admin/invoices', (req, res)=>{
 
@@ -555,14 +572,14 @@ app.get('/admin/send/:invoice_id', async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'himanshuj1y1@gmail.com', // Your Gmail email
-      pass: 'zylq vccq hmde ghem', // App key from Gmail 2FA
+      user: '', // Your Gmail email
+      pass: '', // App key from Gmail 2FA
     },
   });
 
   const mailOptions = {
-    from: 'himanshuj1y1@gmail.com', // Your Gmail email
-    to: 'joshihimanshu1403@gmail.com', // Customer's email
+    from: '', // Your Gmail email
+    to: email, // Customer's email
     subject: 'Invoice from 7Rays',
     text: `
     Customer Details:-
@@ -592,6 +609,11 @@ app.get('/admin/send/:invoice_id', async (req, res) => {
   });
   // res.render('error-404')
 });
+
+
+
+
+
 
 // ------------- RESTAURETNS----------------
 // get food items
@@ -741,4 +763,4 @@ app.listen(4040,() =>{
 });
 
 
-// zylq vccq hmde ghem
+// 
