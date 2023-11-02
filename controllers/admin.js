@@ -12,7 +12,7 @@ app.use(
 );
 
 const db =  mysql.createConnection({
-    host: 'hoteldb-1.cjhvgiah3e0n.us-east-1.rds.amazonaws.com',
+    host: 'hotel-db.cjhvgiah3e0n.us-east-1.rds.amazonaws.com',
     user: 'admin',
     password: '7raysadmindb',
     database: 'testhotel',
