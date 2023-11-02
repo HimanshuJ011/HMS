@@ -252,7 +252,7 @@ app.get('/admin/rooms/:room_id', (req, res) => {
 // get all bookings
 app.get('/admin/bookingsAll', (req, res) => {
 
-  const bookingQuery = ` SELECT
+  const bookingQuery = `SELECT
   b.booking_id,
   g.firstName AS guest_firstName,
   g.lastName AS guest_lastName,
