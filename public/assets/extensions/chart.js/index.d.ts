@@ -1,0 +1,12 @@
+export * from 'assets/extensions/chart.js/controllers/index.js';
+export * from 'assets/extensions/chart.js/core/index.js';
+export * from 'assets/extensions/chart.js/elements/index.js';
+export * from 'assets/extensions/chart.js/platform/index.js';
+export * from 'assets/extensions/chart.js/plugins/index.js';
+export * from 'assets/extensions/chart.js/scales/index.js';
+import * as controllers from 'assets/extensions/chart.js/controllers/index.js';
+import * as elements from 'assets/extensions/chart.js/elements/index.js';
+import * as plugins from 'assets/extensions/chart.js/plugins/index.js';
+import * as scales from 'assets/extensions/chart.js/scales/index.js';
+export { controllers, elements, plugins, scales, };
+export declare const registerables: (typeof controllers | typeof elements | typeof plugins | typeof scales)[];

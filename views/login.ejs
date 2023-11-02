@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+        <title>Login System in Node.js Express</title>
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 class="mt-5 mb-5 text-center text-primary"><b>ADMIN PANNAL</b></h1>
+            <div class="row mt-5">
+                <div class="col-md-3">&nbsp;</div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Login</div>
+                        <div class="card-body">
+
+              <% if(msg) { %>
+                      <h3 style="color: #17b978;" class="text-center"><%=msg%></h3><br>
+                <%   } %>
+                <% if(err) { %>
+                    <h3 style="color: #ff304f;" class="text-center"><%=err%></h3><br>
+                <%   } %>
+                            <form method="POST" action="/admin">
+                                <div class="mb-3">
+                                    <label>Username</label>
+                                    <input type="text" name="username" class="form-control" />
+                                </div>
+                                <div class="mb-3">
+                                    <label>Password</label>
+                                    <input type="password" name="password" class="form-control" />
+                                </div>
+                                <div class="mb-3">
+                                    <input type="submit" class="btn btn-primary" value="Login" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
