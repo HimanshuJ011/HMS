@@ -105,7 +105,12 @@ app.post('/admin/rooms/orders/:room_id', (req, res)=>{
     room_price
     
   } = req.body;  
-
+  const db =  mysql.createConnection({
+    host: 'hotel-db.cjhvgiah3e0n.us-east-1.rds.amazonaws.com',
+    user: 'admin',
+    password: '7raysadmindb',
+    database: 'testhotel',
+  });
   // Create a single connection for the entire transaction
   db.connect((err) => {
     if (err) {
@@ -212,7 +217,7 @@ app.post('/admin/rooms/orders/:room_id', (req, res)=>{
             // Transaction successful
             console.log('User and booking added successfully');
             db.end();
-            res.redirect('/bookingsAll');
+            res.redirect('/admin/bookingsAll');
             });
 
           });
@@ -306,7 +311,7 @@ app.get('/admin/invoices', (req, res)=>{
     if (err) {
       throw err;
     }else{
-      console.log(bookings);
+      // console.log(bookings);
       res.render('invoices',{bookings});
     }
   });
@@ -491,8 +496,22 @@ db.query(query, (err, rows) => {
 });
 });
 
+
 app.post('/admin/update',(req, res)=>{
 
+  const db =  mysql.createConnection({
+    host: 'hotel-db.cjhvgiah3e0n.us-east-1.rds.amazonaws.com',
+    user: 'admin',
+    password: '7raysadmindb',
+    database: 'testhotel',
+  });
+  db.connect((err) => {
+    if (err) {
+      console.error('Database connection error: ' + err.message);
+    } else {
+      console.log('Database connected ');
+    }
+  });
 
 const updatedData = req.body; 
 
@@ -611,6 +630,8 @@ app.get('/admin/send/:invoice_id', async (req, res) => {
 });
 
 
+
+// invoice download PDF
 
 
 
@@ -761,6 +782,3 @@ app.get('/admin/error404',(req, res)=>{
 app.listen(4040,() =>{
     console.log('Server running on port 4040');
 });
-
-
-// 
