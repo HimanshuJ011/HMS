@@ -288,12 +288,20 @@ app.get('/admin/bookings/cancel/:booking_id', (req, res)=>{
 
   const query = `UPDATE Bookings SET status = ? WHERE booking_id = ?`;
   const newStatus = 'cancelled';
+
   db.query(query, [newStatus, bookingId], (err, result) => {
     if (err) {
       console.error('Database error: ' + err);
       return res.status(500).json({ error: 'An error occurred while processing your request.' });
     }
-    res.redirect('/admin/bookingAll');
+    const roomQuery = 'UPDATE Rooms SET status = ? WHERE room_id = (SELECT room_id FROM Bookings WHERE booking_id = ?)';
+    db.query(roomQuery, ['available', bookingId], (err, result) => {
+      if (err) {
+        console.error('Database error: ' + err);
+        return res.status(500).json({ error: 'An error occurred while processing your request.' });
+      }
+      res.redirect('/admin/bookingsAll');
+    });
   });
   
 
