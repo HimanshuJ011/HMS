@@ -435,7 +435,6 @@ app.get('/admin/download/:invoice_id', (req, res) => {
       try {
         const browser = await puppeteer.launch({
           headless: true,
-          headless: false // Set to true for headless mode
         });
         const page = await browser.newPage();
 
@@ -464,9 +463,7 @@ app.get('/admin/download/:invoice_id', (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
         res.setHeader('Content-Type', 'application/pdf');
 
-        if(res.send(pdfBuffer)){
-          res.redirect(`/admin/send/${invoiceData.invoice_id}`)
-        }
+        res.send(pdfBuffer);
         // Send the PDF as a response        
       } catch (error) {
         console.error("Error generating PDF:", error);
@@ -475,7 +472,6 @@ app.get('/admin/download/:invoice_id', (req, res) => {
     }
   });
 });
-
 // get all customers of rooms
 app.get('/admin/roomcustomers', (req, res) => {
 
