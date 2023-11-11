@@ -401,6 +401,7 @@ app.get('/admin/rooms/checkout/:booking_id', (req, res) => {
   })
 });
 
+
 // invoice download PDF
 app.get('/admin/download/:invoice_id', (req, res) => {
   // Render the EJS file
@@ -472,6 +473,9 @@ app.get('/admin/download/:invoice_id', (req, res) => {
     }
   });
 });
+
+
+
 // get all customers of rooms
 app.get('/admin/roomcustomers', (req, res) => {
 
