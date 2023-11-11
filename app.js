@@ -566,50 +566,52 @@ app.get('/admin/send/:invoice_id', async (req, res) => {
 
 
 // invoice download PDF
-app.get('/admin/download/:invoice_id', (req, res) => {
-  // Render the EJS file
-  const { invoice_id } = req.params;
+app.get('/admin/download/:invoice_id', async (req, res) => {
+  try {
+    const { invoice_id } = req.params;
 
-  const invoiceQuery = `
-    SELECT I.*,
-           g.firstName AS guest_firstName,
-           g.lastName AS guest_lastName,
-           g.email AS guest_email,
-           g.phone AS guest_phone,
-           g.addresss AS guest_address,
-           b.booking_date,
-           b.check_in_date,
-           b.check_out_date,
-           b.status,
-           r.room_name,
-           r.price_per_night
-    FROM Invoices AS I
-    JOIN Bookings AS b ON I.booking_id = b.booking_id
-    JOIN Rooms AS r ON b.room_id = r.room_id
-    JOIN Guest AS g ON I.guest_id = g.guest_id
-    WHERE I.invoice_id = ${invoice_id}`;
+    // Fetch invoice data using a parameterized query to prevent SQL injection
+    const invoiceQuery = `
+      SELECT I.*,
+             g.firstName AS guest_firstName,
+             g.lastName AS guest_lastName,
+             g.email AS guest_email,
+             g.phone AS guest_phone,
+             g.addresss AS guest_address,
+             b.booking_date,
+             b.check_in_date,
+             b.check_out_date,
+             b.status,
+             r.room_name,
+             r.price_per_night
+      FROM Invoices AS I
+      JOIN Bookings AS b ON I.booking_id = b.booking_id
+      JOIN Rooms AS r ON b.room_id = r.room_id
+      JOIN Guest AS g ON I.guest_id = g.guest_id
+      WHERE I.invoice_id = ?`;
 
-  db.query(invoiceQuery, async (err, invoiceData) => {
-    if (err) {
-      console.log("Error in Invoice");
-      throw err;
-    } else {
-      invoiceData = invoiceData[0];
+    db.query(invoiceQuery, [invoice_id], async (err, invoiceData) => {
+      if (err) {
+        console.error("Error in Invoice query:", err);
+        return res.status(500).send('Internal Server Error');
+      }
+
+      if (!invoiceData || invoiceData.length === 0) {
+        return res.status(404).send('Invoice not found');
+      }
+
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Add these args for running Puppeteer on some servers like EC2
+      });
+      const page = await browser.newPage();
 
       try {
-        const browser = await puppeteer.launch({
-          headless: true,
-        });
-        const page = await browser.newPage();
-
-        // console.log(invoiceData); // Log the invoice data for debugging
-
         // Compile your EJS template to HTML
         const templatePath = path.join(__dirname, 'views', 'invoice.ejs');
-        const htmlContent = await ejs.renderFile(templatePath, { invoiceData });
+        const htmlContent = await ejs.renderFile(templatePath, { invoiceData: invoiceData[0] });
 
         const options = {
-          path: 'invoice.pdf',
           format: 'A4',
           margin: {
             top: '10mm',
@@ -621,20 +623,25 @@ app.get('/admin/download/:invoice_id', (req, res) => {
 
         await page.setContent(htmlContent);
         const pdfBuffer = await page.pdf(options);
-        await browser.close();
 
         // Set the response headers for downloading the PDF
-        res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=invoice_${invoice_id}.pdf`);
         res.setHeader('Content-Type', 'application/pdf');
 
+        // Send the PDF as a response
         res.send(pdfBuffer);
-        // Send the PDF as a response        
       } catch (error) {
         console.error("Error generating PDF:", error);
         res.status(500).send('Error generating PDF');
+      } finally {
+        // Close the browser after generating the PDF
+        await browser.close();
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 
