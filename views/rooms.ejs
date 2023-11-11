@@ -197,39 +197,36 @@
 </div>
 </div>
 <section class="section">
-<div class="row">
-  <% roomsByFloor.forEach(floor => { %>
-    <div class="col-md-12 col-12">
-      <div class="card">
-        <div class="card-header">
-          <h5>Rooms on Floor <%= floor.floor.floor_name %></h5>
-        </div>
-        <div class="card-body">
-          <div class="d-inline-block mb-2 me-1">
-            <% floor.rooms.forEach(room => { %>
-                <% if (room.status === 'booked') { %>
-                    <a href="/admin/rooms/<%= room.room_id %>">
-                    <button type="button" class="btn btn-danger"  data-room-id="<%= room.room_id %>" data-bs-toggle="tooltip" data-bs-placement="top" title="rooms" onclick="getRoomDetails(this)">
-                      Room No <%= room.room_name %>
-                    </button>
-                    <!-- <p>Type : <%= room.room_type_name %></p>
-                    <p>Price : <%= room.room_price %></p> -->
-                    </a>
-                  <% } else { %>
-                     <a href="/admin/rooms/orders/<%= room.room_id %>">
-                    <button type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="rooms">
-                      Room No <%= room.room_name %>
-                    </button>
-                    <!-- <p>Type : <%= room.room_type_name %></p>
-                    <p>Price : <%= room.room_price %></p> -->
-                  <% } %>
-            <% }) %>
+    <div class="row">
+        <% roomsByFloor.forEach(floor => { %>
+          <div class="col-md-12 col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5>Rooms on Floor <%= floor.floor.floor_name %></h5>
+              </div>
+              <div class="card-body">
+                <div class="d-inline-block mb-2 me-1">
+                  <% floor.rooms.forEach(room => { %>
+                    <% if (room.status === 'booked') { %>
+                      <a href="/admin/rooms/<%= room.room_id %>">
+                        <button type="button" class="btn btn-danger" data-room-id="<%= room.room_id %>" data-bs-toggle="tooltip" data-bs-placement="top" title="rooms" onclick="getRoomDetails(this)">
+                          Room No <%= room.room_name %>
+                        </button>
+                      </a>
+                    <% } else { %>
+                      <a href="/admin/rooms/orders/<%= room.room_id %>">
+                        <button type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="rooms">
+                          Room No <%= room.room_name %>
+                        </button>
+                      </a>
+                    <% } %>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        <% }) %>
       </div>
-    </div>
-  <% }) %>
-</div>
 </section>
 </div>
 
