@@ -566,32 +566,10 @@ app.get('/admin/send/:invoice_id', async (req, res) => {
 
 
 // invoice download PDF
-app.get('/admin/download/:invoice_id', async (req, res) => {
-  try {
-    const { invoice_id } = req.params;
+app.get('/admin/download/:invoice_id', (req, res) => {
+  // Render the EJS file
+  const { invoice_id } = req.params;
 
-    const invoiceData = await fetchInvoiceData(invoice_id);
-
-    if (!invoiceData) {
-      return res.status(404).send('Invoice not found');
-    }
-
-    const pdfBuffer = await generatePDF(invoiceData);
-
-    if (!pdfBuffer) {
-      return res.status(500).send('Error generating PDF');
-    }
-
-    res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
-    res.setHeader('Content-Type', 'application/pdf');
-    res.send(pdfBuffer);
-  } catch (error) {
-    console.error("Unexpected Error:", error);
-    res.status(500).send('Unexpected error');
-  }
-});
-
-async function fetchInvoiceData(invoice_id) {
   const invoiceQuery = `
     SELECT I.*,
            g.firstName AS guest_firstName,
@@ -609,50 +587,56 @@ async function fetchInvoiceData(invoice_id) {
     JOIN Bookings AS b ON I.booking_id = b.booking_id
     JOIN Rooms AS r ON b.room_id = r.room_id
     JOIN Guest AS g ON I.guest_id = g.guest_id
-    WHERE I.invoice_id = ?`;
+    WHERE I.invoice_id = ${invoice_id}`;
 
-  return new Promise((resolve, reject) => {
-    db.query(invoiceQuery, [invoice_id], (err, result) => {
-      if (err) {
-        console.error("Error in Invoice Query:", err);
-        reject(err);
-      } else {
-        resolve(result[0]);
+  db.query(invoiceQuery, async (err, invoiceData) => {
+    if (err) {
+      console.log("Error in Invoice");
+      throw err;
+    } else {
+      invoiceData = invoiceData[0];
+
+      try {
+        const browser = await puppeteer.launch({
+          headless: true,
+        });
+        const page = await browser.newPage();
+
+        // console.log(invoiceData); // Log the invoice data for debugging
+
+        // Compile your EJS template to HTML
+        const templatePath = path.join(__dirname, 'views', 'invoice.ejs');
+        const htmlContent = await ejs.renderFile(templatePath, { invoiceData });
+
+        const options = {
+          path: 'invoice.pdf',
+          format: 'A4',
+          margin: {
+            top: '10mm',
+            right: '20mm',
+            bottom: '10mm',
+            left: '10mm',
+          },
+        };
+
+        await page.setContent(htmlContent);
+        const pdfBuffer = await page.pdf(options);
+        await browser.close();
+
+        // Set the response headers for downloading the PDF
+        res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
+        res.setHeader('Content-Type', 'application/pdf');
+
+        res.send(pdfBuffer);
+        // Send the PDF as a response        
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        res.status(500).send('Error generating PDF');
       }
-    });
+    }
   });
-}
-async function generatePDF(invoiceData) {
-  try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: '/path/to/chromium', // Adjust the path to your Chromium executable
-    });
-    const page = await browser.newPage();
+});
 
-    const templatePath = path.join(__dirname, 'views', 'invoice.ejs');
-    const htmlContent = await ejs.renderFile(templatePath, { invoiceData });
-
-    const options = {
-      format: 'A4',
-      margin: {
-        top: '10mm',
-        right: '20mm',
-        bottom: '10mm',
-        left: '10mm',
-      },
-    };
-
-    await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf(options);
-    await browser.close();
-
-    return pdfBuffer;
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    return null;
-  }
-}
 
 // ------------- RESTAURETNS----------------
 // get food items
