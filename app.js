@@ -8,7 +8,6 @@ const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const doc = new PDFDocument();
 doc.pipe(fs.createWriteStream('invoice.pdf'));
-const puppeteer = require('puppeteer');
 const nodemailer = require('nodemailer');
 
 
@@ -91,12 +90,6 @@ const roomsRouter = require('./routes/rooms');
 app.use("/admin",adminRouter);
 app.use("/admin/rooms",roomsRouter);
 
-
-// app.get('/home', (req, res)=>{
-//     res.render('home');  
-// });
-
-// book ROOm
 
 app.post('/admin/rooms/orders/:room_id', (req, res)=>{
   const { firstName,lastName, dob, gender, email,phone,addresss,city,country,postcode,room_id,checkin,checkout,
@@ -488,161 +481,7 @@ db.query(
 });
 //  SEND Invoice to mail
 
-//  app.post is there after remove erro file
-app.get('/admin/send/:invoice_id', async (req, res) => {
-
-  const { invoice_id } = req.params;
-
-  const invoiceQuery = `
-  SELECT I.*,
-         g.firstName AS guest_firstName,
-         g.lastName AS guest_lastName,
-         g.email AS guest_email,
-         g.phone AS guest_phone,
-         g.addresss AS guest_address,
-         b.booking_date,
-         b.check_in_date,
-         b.check_out_date,
-         b.status,
-         r.room_name,
-         r.price_per_night
-  FROM Invoices AS I
-  JOIN Bookings AS b ON I.booking_id = b.booking_id
-  JOIN Rooms AS r ON b.room_id = r.room_id
-  JOIN Guest AS g ON I.guest_id = g.guest_id
-  WHERE I.invoice_id = ${invoice_id}`;
-
-  db.query(invoiceQuery, async (err, invoiceData) => {
-    if (err) {
-      console.log("Error in Invoice");
-      throw err;
-    }
-    else{
-      const data = invoiceData[0];
-      const full_name = data.guest_firstName + ' ' + data.guest_lastName;
-      const email = data.guest_email;
-  // Create a transporter for sending emails
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: '', // Your Gmail email
-      pass: '', // App key from Gmail 2FA
-    },
-  });
-
-  const mailOptions = {
-    from: '', // Your Gmail email
-    to: email, // Customer's email
-    subject: 'Invoice from 7Rays',
-    text: `
-    Customer Details:-
-    Name: ${full_name}
-    Email: ${email}
-    `,
-    attachments: [
-      {
-        filename: 'invoice.pdf',
-        path: 'invoice.pdf', // Path to the generated invoice PDF
-      },
-    ],
-  };
-
-  // chinmaymenaria07@gmail.com
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
-    res.redirect('/home');
-
-  } catch (error) {
-    console.error('Error sending email: ' + error);
-    res.status(500).send('Error sending email');
-  }
-    }
-  });
-  // res.render('error-404')
-});
-
-
-
 // invoice download PDF
-app.get('/admin/download/:invoice_id', async (req, res) => {
-  try {
-    const { invoice_id } = req.params;
-
-    // Fetch invoice data using a parameterized query to prevent SQL injection
-    const invoiceQuery = `
-      SELECT I.*,
-             g.firstName AS guest_firstName,
-             g.lastName AS guest_lastName,
-             g.email AS guest_email,
-             g.phone AS guest_phone,
-             g.addresss AS guest_address,
-             b.booking_date,
-             b.check_in_date,
-             b.check_out_date,
-             b.status,
-             r.room_name,
-             r.price_per_night
-      FROM Invoices AS I
-      JOIN Bookings AS b ON I.booking_id = b.booking_id
-      JOIN Rooms AS r ON b.room_id = r.room_id
-      JOIN Guest AS g ON I.guest_id = g.guest_id
-      WHERE I.invoice_id = ?`;
-
-    db.query(invoiceQuery, [invoice_id], async (err, invoiceData) => {
-      if (err) {
-        console.error("Error in Invoice query:", err);
-        return res.status(500).send('Internal Server Error');
-      }
-
-      if (!invoiceData || invoiceData.length === 0) {
-        return res.status(404).send('Invoice not found');
-      }
-
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Add these args for running Puppeteer on some servers like EC2
-      });
-      const page = await browser.newPage();
-
-      try {
-        // Compile your EJS template to HTML
-        const templatePath = path.join(__dirname, 'views', 'invoice.ejs');
-        const htmlContent = await ejs.renderFile(templatePath, { invoiceData: invoiceData[0] });
-
-        const options = {
-          format: 'A4',
-          margin: {
-            top: '10mm',
-            right: '20mm',
-            bottom: '10mm',
-            left: '10mm',
-          },
-        };
-
-        await page.setContent(htmlContent);
-        const pdfBuffer = await page.pdf(options);
-
-        // Set the response headers for downloading the PDF
-        res.setHeader('Content-Disposition', `attachment; filename=invoice_${invoice_id}.pdf`);
-        res.setHeader('Content-Type', 'application/pdf');
-
-        // Send the PDF as a response
-        res.send(pdfBuffer);
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-        res.status(500).send('Error generating PDF');
-      } finally {
-        // Close the browser after generating the PDF
-        await browser.close();
-      }
-    });
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
 
 // ------------- RESTAURETNS----------------
